@@ -16,26 +16,33 @@ const useStyles = makeStyles({
   }
 })
 
-const ToDo = memo(SortableElement(({ value, onChange, onRemove }) => {
+const PureCard = memo(Card);
+PureCard.displayName = 'PureCard';
+const PureSwitch = memo(Switch);
+PureSwitch.displayName = 'PureSwitch';
+const PureToDoComponent = memo(({ value, onChange, onRemove }) => {
   const classes = useStyles();
   const handleChange = useMemo(() => () => onChange(value.id), [value.id, onChange]);
   const handleRemove = useMemo(() => () => onRemove(value.id), [value.id, onRemove]);
   return (
-    <Card className={classes.card}>
+    <PureCard className={classes.card}>
       <button onClick={handleRemove}>X</button>
       <div>{value.description}</div>
-      <Switch checked={value.complete} onChange={handleChange} />
-    </Card>
+      <PureSwitch checked={value.complete} onChange={handleChange} />
+    </PureCard>
   )
-}));
-ToDo.whyDidYouRender = true;
+});
+PureToDoComponent.displayName = 'PureToDoComponent';
+const PureToDoContainer = SortableElement(PureToDoComponent);
+PureToDoContainer.displayName = 'PureToDoContainer';
+const PureToDo = memo(PureToDoContainer);
+PureToDo.displayName = 'PureToDo';
 
-const ToDoSortableList = memo(SortableContainer(({ todos, toggleTodo, removeTodo }) => {
-
+const PureToDoSortableListComponent = memo(({ todos, toggleTodo, removeTodo }) => {
   return (
     <ul>
       {todos.map((todo, index) => (
-        <ToDo
+        <PureToDo
           key={todo.id}
           index={index}
           value={todo}
@@ -45,34 +52,44 @@ const ToDoSortableList = memo(SortableContainer(({ todos, toggleTodo, removeTodo
       ))}
     </ul>
   );
-}));
-ToDoSortableList.propTypes = {
-};
-ToDoSortableList.whyDidYouRender = true;
+});
+PureToDoSortableListComponent.displayName = 'PureToDoSortableListComponent';
+const PureToDoSortableListContainer = SortableContainer(PureToDoSortableListComponent);
+PureToDoSortableListContainer.displayName = 'PureToDoSortableListContainer';
+const PureToDoSortableList = memo(PureToDoSortableListContainer);
+PureToDoSortableList.displayName = 'PureToDoSortableList';
 
-const ToDoList = memo(({ todos, addTodo, reorderTodo, toggleTodo, removeTodo }) => {
+const PureTextField = memo(TextField);
+const PureButton = memo(Button);
+
+const PureToDoList = memo(({ todos, addTodo, reorderTodo, toggleTodo, removeTodo }) => {
   const onSortEnd = ({ oldIndex, newIndex }) => {
     reorderTodo(oldIndex, newIndex);
   };
+  if (todos.length === 0) {
+    addTodo(uuid(), '1');
+    addTodo(uuid(), '2');
+    addTodo(uuid(), '3');
+    addTodo(uuid(), '4');
+    addTodo(uuid(), '5');
+  }
   const textFieldRef = useRef();
+  const handleButtonClick = useMemo(() => () => {
+    addTodo(uuid(), textFieldRef.current.value);
+    textFieldRef.current.value = "";
+  }, [addTodo]);
   return (
     <div>
-      <TextField inputRef={textFieldRef}/>
-      <Button
-        onClick={() => {
-          addTodo(uuid(), textFieldRef.current.value);
-          textFieldRef.current.value = "";
-        }}>
-        ADD
-      </Button>
-      <ToDoSortableList todos={todos} onSortEnd={onSortEnd} toggleTodo={toggleTodo} removeTodo={removeTodo} />
+      <PureTextField inputRef={textFieldRef}/>
+      <PureButton onClick={handleButtonClick}>ADD</PureButton>
+      <PureToDoSortableList todos={todos} onSortEnd={onSortEnd} toggleTodo={toggleTodo} removeTodo={removeTodo} />
     </div>
   );
 });
+PureToDoList.displayName = 'PureToDoList';
 
-ToDoList.whyDidYouRender = true;
 
-export { ToDoList };
+export { PureToDoList };
 
 const mapStateToProps = state => ({
   todos: state.todos,
@@ -85,4 +102,4 @@ const mapDispatchToProps = {
   removeTodo: todoActions.removeTodo,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(ToDoList);
+export default connect(mapStateToProps, mapDispatchToProps)(PureToDoList);
